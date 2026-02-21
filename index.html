@@ -63,10 +63,6 @@ body{
   color:var(--text);
 }
 
-.top-buttons button:hover{
-  transform:translateY(-2px);
-}
-
 .summary{
   background:linear-gradient(135deg,var(--green1),var(--green2));
   color:white;
@@ -154,7 +150,6 @@ input{
 
 .entry-right{
   text-align:right;
-  font-weight:500;
 }
 
 .small-btn{
@@ -326,6 +321,31 @@ function addEntry(){
   render();
 }
 
+function editEntry(index){
+  const entry=data.active.entries[index];
+
+  const newDate=prompt("Edit Date (YYYY-MM-DD)",entry.date);
+  if(!newDate) return;
+
+  const newIn=prompt("Clock In (HH:MM)",entry.inTime||"08:00");
+  if(!newIn) return;
+
+  const newOut=prompt("Clock Out (HH:MM)",entry.outTime||"17:00");
+  if(!newOut) return;
+
+  const hours=calculateHours(newDate,newIn,newOut);
+
+  data.active.entries[index]={date:newDate,inTime:newIn,outTime:newOut,hours};
+  save();
+  render();
+}
+
+function deleteCycle(index){
+  data.cycles.splice(index,1);
+  save();
+  render();
+}
+
 function render(){
   if(!data.active) return;
 
@@ -351,7 +371,30 @@ function render(){
   document.getElementById("progressLabel").innerText=
     "Period Progress ("+Math.round(progress)+"%)";
 
+  renderCurrentEntries();
   renderPast();
+}
+
+function renderCurrentEntries(){
+  const container=document.getElementById("currentEntries");
+  container.innerHTML="";
+
+  data.active.entries.forEach((e,index)=>{
+    const dateObj=new Date(e.date+"T00:00:00");
+    const dayName=dateObj.toLocaleDateString(undefined,{weekday:"short"});
+    const formatted=`${dayName}, ${formatDateDisplay(e.date)}`;
+
+    const row=document.createElement("div");
+    row.className="entry-row";
+    row.innerHTML=`
+      <div><strong>${formatted}</strong></div>
+      <div class="entry-right">
+        ${e.hours.toFixed(2)} hrs<br>
+        <button class="small-btn" onclick="editEntry(${index})">Edit</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
 }
 
 function renderPast(){
