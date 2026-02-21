@@ -31,7 +31,6 @@ body{
   transition:0.3s;
 }
 
-/* TOPBAR */
 .topbar{
   display:flex;
   justify-content:space-between;
@@ -68,7 +67,6 @@ body{
   transform:translateY(-2px);
 }
 
-/* SUMMARY */
 .summary{
   background:linear-gradient(135deg,var(--green1),var(--green2));
   color:white;
@@ -114,7 +112,6 @@ body{
   transition:0.8s ease;
 }
 
-/* CARDS */
 .card{
   background:var(--card);
   padding:20px;
@@ -158,6 +155,16 @@ input{
 .entry-right{
   text-align:right;
   font-weight:500;
+}
+
+.small-btn{
+  background:#3b82f6;
+  color:white;
+  border:none;
+  padding:4px 8px;
+  border-radius:6px;
+  cursor:pointer;
+  margin-top:4px;
 }
 
 .delete-btn{
@@ -301,10 +308,35 @@ function addEntry(){
     data.active.entries.push({date,hours:0});
   }else{
     const hours=calculateHours(date,inTime,outTime);
-    data.active.entries.push({date,hours});
+    data.active.entries.push({date,inTime,outTime,hours});
   }
 
   document.getElementById("dayOff").checked=false;
+  save();
+  render();
+}
+
+function editEntry(index){
+  const entry=data.active.entries[index];
+
+  const newDate=prompt("Edit Date (YYYY-MM-DD)",entry.date);
+  if(!newDate) return;
+
+  const newIn=prompt("Clock In (HH:MM)",entry.inTime||"08:00");
+  if(!newIn) return;
+
+  const newOut=prompt("Clock Out (HH:MM)",entry.outTime||"17:00");
+  if(!newOut) return;
+
+  const hours=calculateHours(newDate,newIn,newOut);
+
+  data.active.entries[index]={
+    date:newDate,
+    inTime:newIn,
+    outTime:newOut,
+    hours:hours
+  };
+
   save();
   render();
 }
@@ -347,10 +379,8 @@ function renderCurrentEntries(){
   const container=document.getElementById("currentEntries");
   container.innerHTML="";
 
-  data.active.entries.forEach(e=>{
-    const dailyEarning=e.hours*data.rate;
-
-    const dateObj=new Date(e.date);
+  data.active.entries.forEach((e,index)=>{
+    const dateObj=new Date(e.date+"T00:00:00");
     const dayName=dateObj.toLocaleDateString(undefined,{weekday:"short"});
     const [y,m,d]=e.date.split("-");
     const formatted=`${dayName}, ${m}-${d}-${y}`;
@@ -360,8 +390,9 @@ function renderCurrentEntries(){
     row.innerHTML=`
       <div><strong>${formatted}</strong></div>
       <div class="entry-right">
-        ${e.hours.toFixed(2)} hrs<br>
-        $${dailyEarning.toFixed(2)}
+        ${e.hours.toFixed(2)} hrs
+        <br>
+        <button class="small-btn" onclick="editEntry(${index})">Edit</button>
       </div>
     `;
     container.appendChild(row);
