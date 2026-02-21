@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Income Log</title>
 
-<link rel="manifest" href="manifest.json">
-
 <style>
 body {
   margin:0;
@@ -30,9 +28,7 @@ body {
   border-radius:24px;
   margin-bottom:40px;
   box-shadow:0 30px 60px rgba(0,0,0,0.1);
-  transition:0.3s;
 }
-.summary-card:hover { transform:translateY(-4px); }
 
 .summary-header {
   display:flex;
@@ -47,6 +43,7 @@ body {
   border-radius:10px;
   color:white;
   cursor:pointer;
+  margin-left:10px;
 }
 
 .stats {
@@ -60,20 +57,6 @@ body {
   background:rgba(255,255,255,0.15);
   padding:20px;
   border-radius:16px;
-}
-
-.progress-bar {
-  height:10px;
-  background:rgba(255,255,255,0.3);
-  border-radius:6px;
-  overflow:hidden;
-  margin-top:10px;
-}
-.progress-fill {
-  height:100%;
-  background:white;
-  width:0%;
-  transition:width 0.5s ease;
 }
 
 .card {
@@ -102,10 +85,19 @@ button.primary {
   background:#15803d;
   color:white;
   border:none;
-  padding:12px 20px;
-  border-radius:12px;
+  padding:10px 15px;
+  border-radius:10px;
   cursor:pointer;
-  margin-top:20px;
+  margin-top:15px;
+}
+
+button.small {
+  background:#e5e7eb;
+  border:none;
+  padding:5px 10px;
+  border-radius:8px;
+  margin-left:5px;
+  cursor:pointer;
 }
 
 .past-item {
@@ -122,7 +114,13 @@ button.primary {
   transition:max-height 0.3s ease;
   padding-left:10px;
 }
-.dropdown.show { max-height:200px; }
+.dropdown.show { max-height:500px; }
+
+.entry-row {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
 </style>
 </head>
 
@@ -141,7 +139,10 @@ button.primary {
       <h2>Biweekly Income Summary</h2>
       <p id="cycleRange"></p>
     </div>
-    <button class="edit-btn" onclick="startNewCycle()">New Cycle</button>
+    <div>
+      <button class="edit-btn" onclick="modifyCycle()">Modify Cycle</button>
+      <button class="edit-btn" onclick="startNewCycle()">New Cycle</button>
+    </div>
   </div>
 
   <div class="stats">
@@ -154,31 +155,25 @@ button.primary {
       <h3 id="totalEarnings">$0.00</h3>
     </div>
     <div class="stat-box">
-      <small>Est. Net (After Tax 22%)</small>
+      <small>Est Net (22% Tax)</small>
       <h3 id="netPay">$0.00</h3>
-    </div>
-    <div class="stat-box">
-      <small>Days Left</small>
-      <h3 id="daysLeft">0</h3>
-    </div>
-  </div>
-
-  <div style="margin-top:25px;">
-    <small id="progressText"></small>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill"></div>
     </div>
   </div>
 </div>
 
 <div class="card">
-  <h2>Add New Entry</h2>
+  <h2>Add Entry</h2>
   <div class="entry-grid">
     <input type="date" id="entryDate">
     <input type="time" id="clockIn">
     <input type="time" id="clockOut">
   </div>
   <button class="primary" onclick="addEntry()">Add Entry</button>
+</div>
+
+<div class="card">
+  <h2>Entries (Current Cycle)</h2>
+  <div id="currentEntries"></div>
 </div>
 
 <div class="card">
@@ -193,9 +188,7 @@ let data = JSON.parse(localStorage.getItem("incomeApp")) || {
   rate: 12
 };
 
-function save(){
-  localStorage.setItem("incomeApp",JSON.stringify(data));
-}
+function save(){ localStorage.setItem("incomeApp",JSON.stringify(data)); }
 
 function formatDate(dateStr){
   const d=new Date(dateStr);
@@ -214,28 +207,50 @@ function startNewCycle(){
 
   if(data.active) data.cycles.push(data.active);
 
-  data.active={
-    start:start,
-    end:end.toISOString().split("T")[0],
-    entries:[]
-  };
+  data.active={start:start,end:end.toISOString().split("T")[0],entries:[]};
+  save(); render();
+}
 
-  save();
-  render();
+function modifyCycle(){
+  if(!data.active) return;
+  const newStart=prompt("New start date (YYYY-MM-DD)",data.active.start);
+  const newEnd=prompt("New end date (YYYY-MM-DD)",data.active.end);
+  if(newStart) data.active.start=newStart;
+  if(newEnd) data.active.end=newEnd;
+  save(); render();
 }
 
 function addEntry(){
   if(!data.active) return alert("Start cycle first");
-
   const date=document.getElementById("entryDate").value;
   const inTime=document.getElementById("clockIn").value;
   const outTime=document.getElementById("clockOut").value;
 
   const hours=(new Date("1970-01-01T"+outTime)-new Date("1970-01-01T"+inTime))/3600000;
+  data.active.entries.push({date,inTime,outTime,hours});
+  save(); render();
+}
 
-  data.active.entries.push({date,hours});
-  save();
-  render();
+function deleteEntry(index){
+  data.active.entries.splice(index,1);
+  save(); render();
+}
+
+function editEntry(index){
+  const entry=data.active.entries[index];
+  const newIn=prompt("New Clock In (HH:MM)",entry.inTime);
+  const newOut=prompt("New Clock Out (HH:MM)",entry.outTime);
+  if(newIn && newOut){
+    entry.inTime=newIn;
+    entry.outTime=newOut;
+    entry.hours=(new Date("1970-01-01T"+newOut)-new Date("1970-01-01T"+newIn))/3600000;
+  }
+  save(); render();
+}
+
+function deleteCycle(index){
+  data.cycles.splice(index,1);
+  save(); render();
 }
 
 function render(){
@@ -246,53 +261,46 @@ function render(){
 
   const totalHours=data.active.entries.reduce((s,e)=>s+e.hours,0);
   const earnings=totalHours*data.rate;
-  const tax=earnings*0.22;
-  const net=earnings-tax;
+  const net=earnings-(earnings*0.22);
 
   document.getElementById("totalHours").innerText=totalHours.toFixed(2);
   document.getElementById("totalEarnings").innerText="$"+earnings.toFixed(2);
   document.getElementById("netPay").innerText="$"+net.toFixed(2);
 
-  const today=new Date();
-  const start=new Date(data.active.start);
-  const end=new Date(data.active.end);
-
-  const totalDays=14;
-  const daysPassed=Math.min(totalDays,
-    Math.floor((today-start)/(1000*60*60*24))+1
-  );
-  const percent=(daysPassed/totalDays)*100;
-
-  document.getElementById("progressFill").style.width=percent+"%";
-
-  const daysLeft=Math.max(0,
-    Math.ceil((end-today)/(1000*60*60*24))
-  );
-
-  document.getElementById("daysLeft").innerText=daysLeft;
-  document.getElementById("progressText").innerText=
-    "Period Progress ("+daysPassed+" of 14 days) — "+Math.round(percent)+"%";
-
+  renderCurrentEntries();
   renderPast();
+}
+
+function renderCurrentEntries(){
+  const container=document.getElementById("currentEntries");
+  container.innerHTML="";
+  data.active.entries.forEach((e,i)=>{
+    const row=document.createElement("div");
+    row.className="entry-row";
+    row.innerHTML=`
+      <div>${formatDate(e.date)} | ${e.hours.toFixed(2)} hrs</div>
+      <div>
+        <button class="small" onclick="editEntry(${i})">Edit</button>
+        <button class="small" onclick="deleteEntry(${i})">Delete</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
 }
 
 function renderPast(){
   const container=document.getElementById("pastCycles");
   container.innerHTML="";
-
-  data.cycles.slice().reverse().forEach(cycle=>{
+  data.cycles.slice().reverse().forEach((cycle,i)=>{
     const totalHours=cycle.entries.reduce((s,e)=>s+e.hours,0);
     const earnings=totalHours*data.rate;
 
     const div=document.createElement("div");
     div.innerHTML=`
-      <div class="past-item" onclick="this.nextElementSibling.classList.toggle('show')">
+      <div class="past-item">
         <strong>${formatDate(cycle.start)} — ${formatDate(cycle.end)}</strong>
         <span style="float:right;color:#15803d;">$${earnings.toFixed(2)}</span>
-      </div>
-      <div class="dropdown">
-        <p>Total Hours: ${totalHours.toFixed(2)}</p>
-        <p>Days Worked: ${cycle.entries.length}</p>
+        <button class="small" onclick="deleteCycle(${data.cycles.length-1-i})">Delete</button>
       </div>
     `;
     container.appendChild(div);
@@ -300,10 +308,6 @@ function renderPast(){
 }
 
 render();
-
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js");
-}
 </script>
 
 </body>
