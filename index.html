@@ -40,7 +40,7 @@ body{
 
 .stats{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
   gap:20px;
   margin-top:30px;
 }
@@ -95,7 +95,13 @@ button.small{
 .entry-row{
   display:flex;
   justify-content:space-between;
-  align-items:center;
+  padding:10px 0;
+  border-bottom:1px solid #eee;
+}
+
+.past-cycle{
+  display:flex;
+  justify-content:space-between;
   padding:10px 0;
   border-bottom:1px solid #eee;
 }
@@ -122,12 +128,8 @@ button.small{
       <h3 id="totalHours">0.00</h3>
     </div>
     <div class="stat-box">
-      <small>Earnings</small>
+      <small>Total Earnings</small>
       <h3 id="totalEarnings">$0.00</h3>
-    </div>
-    <div class="stat-box">
-      <small>Est Net (22%)</small>
-      <h3 id="netPay">$0.00</h3>
     </div>
   </div>
 </div>
@@ -147,6 +149,11 @@ button.small{
   <div id="currentEntries"></div>
 </div>
 
+<div class="card">
+  <h2>Past Cycles</h2>
+  <div id="pastCycles"></div>
+</div>
+
 <script>
 let data = JSON.parse(localStorage.getItem("incomeApp")) || {
   cycles: [],
@@ -158,19 +165,24 @@ function save(){
   localStorage.setItem("incomeApp",JSON.stringify(data));
 }
 
-function formatDate(dateStr){
-  const d = new Date(dateStr);
-  const options = { weekday:"short" };
-  const dayName = d.toLocaleDateString(undefined,options);
-  const m = String(d.getMonth()+1).padStart(2,"0");
-  const day = String(d.getDate()).padStart(2,"0");
-  const y = d.getFullYear();
-  return `${dayName}, ${m}-${day}-${y}`;
+/* NO Date() used for display */
+function formatDisplay(dateStr){
+  const [y,m,d] = dateStr.split("-");
+  const dayName = getDayName(y,m,d);
+  return `${dayName}, ${m}-${d}-${y}`;
 }
 
+/* Safe day name calculation */
+function getDayName(y,m,d){
+  const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const date = new Date(Number(y), Number(m)-1, Number(d));
+  return days[date.getDay()];
+}
+
+/* Safe add days */
 function addDays(dateStr,days){
   const [y,m,d] = dateStr.split("-");
-  const date = new Date(y, m-1, d);
+  const date = new Date(Number(y), Number(m)-1, Number(d));
   date.setDate(date.getDate()+days);
   const newY = date.getFullYear();
   const newM = String(date.getMonth()+1).padStart(2,"0");
@@ -186,12 +198,7 @@ function startNewCycle(){
 
   if(data.active) data.cycles.push(data.active);
 
-  data.active = {
-    start:start,
-    end:end,
-    entries:[]
-  };
-
+  data.active = { start:start, end:end, entries:[] };
   save();
   render();
 }
@@ -235,38 +242,42 @@ function addEntry(){
   render();
 }
 
+function deletePastCycle(index){
+  data.cycles.splice(index,1);
+  save();
+  render();
+}
+
 function render(){
   if(!data.active) return;
 
   document.getElementById("cycleRange").innerText =
-    formatDate(data.active.start)+" — "+formatDate(data.active.end);
+    formatDisplay(data.active.start)+" — "+formatDisplay(data.active.end);
 
   let totalHours=0;
-
   data.active.entries.forEach(e=> totalHours+=e.hours);
 
   const earnings = totalHours*data.rate;
-  const net = earnings-(earnings*0.22);
 
   document.getElementById("totalHours").innerText = totalHours.toFixed(2);
   document.getElementById("totalEarnings").innerText = "$"+earnings.toFixed(2);
-  document.getElementById("netPay").innerText = "$"+net.toFixed(2);
 
   renderEntries();
+  renderPast();
 }
 
 function renderEntries(){
   const container=document.getElementById("currentEntries");
   container.innerHTML="";
 
-  data.active.entries.forEach((e,i)=>{
+  data.active.entries.forEach(e=>{
     const dailyEarning = e.hours*data.rate;
 
     const row=document.createElement("div");
     row.className="entry-row";
     row.innerHTML=`
       <div>
-        <strong>${formatDate(e.date)}</strong><br>
+        <strong>${formatDisplay(e.date)}</strong><br>
         ${e.inTime} → ${e.outTime}
       </div>
       <div style="text-align:right">
@@ -275,6 +286,28 @@ function renderEntries(){
       </div>
     `;
     container.appendChild(row);
+  });
+}
+
+function renderPast(){
+  const container=document.getElementById("pastCycles");
+  container.innerHTML="";
+
+  data.cycles.slice().reverse().forEach((cycle,i)=>{
+    let totalHours=0;
+    cycle.entries.forEach(e=> totalHours+=e.hours);
+    const earnings = totalHours*data.rate;
+
+    const div=document.createElement("div");
+    div.className="past-cycle";
+    div.innerHTML=`
+      <div>
+        <strong>${formatDisplay(cycle.start)} — ${formatDisplay(cycle.end)}</strong><br>
+        ${totalHours.toFixed(2)} hrs | $${earnings.toFixed(2)}
+      </div>
+      <button class="small" onclick="deletePastCycle(${data.cycles.length-1-i})">Delete</button>
+    `;
+    container.appendChild(div);
   });
 }
 
