@@ -144,13 +144,13 @@ input{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:10px 0;
+  padding:12px 0;
   border-bottom:1px solid #eee;
 }
 
-.entry-right{
-  text-align:right;
-}
+.entry-left{ flex:1; }
+.entry-center{ flex:1; text-align:center; color:#6b7280; }
+.entry-right{ flex:1; text-align:right; }
 
 .small-btn{
   background:#3b82f6;
@@ -264,16 +264,20 @@ function formatDateDisplay(dateStr){
   return `${m}-${d}-${y}`;
 }
 
+function formatTime(timeStr){
+  if(!timeStr) return "";
+  const [hour,minute] = timeStr.split(":");
+  const h = Number(hour);
+  const suffix = h >= 12 ? "PM" : "AM";
+  const formattedHour = ((h + 11) % 12 + 1);
+  return `${formattedHour}:${minute} ${suffix}`;
+}
+
 function addDays(dateStr,days){
   const [y,m,d] = dateStr.split("-");
   const date = new Date(Number(y), Number(m)-1, Number(d));
   date.setDate(date.getDate()+days);
-
-  const newY = date.getFullYear();
-  const newM = String(date.getMonth()+1).padStart(2,"0");
-  const newD = String(date.getDate()).padStart(2,"0");
-
-  return `${newY}-${newM}-${newD}`;
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
 }
 
 function newCycle(){
@@ -356,10 +360,8 @@ function render(){
   let totalHours=0;
   data.active.entries.forEach(e=> totalHours+=e.hours);
 
-  const earnings=totalHours*data.rate;
-
   document.getElementById("totalHours").innerText=totalHours.toFixed(2);
-  document.getElementById("totalEarnings").innerText="$"+earnings.toFixed(2);
+  document.getElementById("totalEarnings").innerText="$"+(totalHours*data.rate).toFixed(2);
 
   const today=new Date();
   const end=new Date(data.active.end);
@@ -387,7 +389,10 @@ function renderCurrentEntries(){
     const row=document.createElement("div");
     row.className="entry-row";
     row.innerHTML=`
-      <div><strong>${formatted}</strong></div>
+      <div class="entry-left"><strong>${formatted}</strong></div>
+      <div class="entry-center">
+        ${e.inTime ? formatTime(e.inTime)+" → "+formatTime(e.outTime) : "Day Off"}
+      </div>
       <div class="entry-right">
         ${e.hours.toFixed(2)} hrs<br>
         <button class="small-btn" onclick="editEntry(${index})">Edit</button>
