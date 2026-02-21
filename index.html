@@ -63,10 +63,6 @@ body{
   color:var(--text);
 }
 
-.top-buttons button:hover{
-  transform:translateY(-2px);
-}
-
 .summary{
   background:linear-gradient(135deg,var(--green1),var(--green2));
   color:white;
@@ -208,14 +204,6 @@ input{
       <small>Earnings</small>
       <h4 id="totalEarnings">$0.00</h4>
     </div>
-    <div class="stat">
-      <small>Rate</small>
-      <h4>$12/hr</h4>
-    </div>
-    <div class="stat">
-      <small>Days Left</small>
-      <h4 id="daysLeft">0</h4>
-    </div>
   </div>
 
   <div class="progress-container">
@@ -248,11 +236,6 @@ input{
   <div id="currentEntries"></div>
 </div>
 
-<div class="card">
-  <h4>Past Cycles</h4>
-  <div id="pastCycles"></div>
-</div>
-
 <script>
 let data = JSON.parse(localStorage.getItem("incomeApp")) || {
   cycles: [],
@@ -264,9 +247,10 @@ function save(){
   localStorage.setItem("incomeApp",JSON.stringify(data));
 }
 
-function formatDateDDMM(dateStr){
+/* FORMAT MM/DD/YYYY */
+function formatDateMMDD(dateStr){
   const [y,m,d] = dateStr.split("-");
-  return `${d}/${m}/${y}`;
+  return `${m}/${d}/${y}`;
 }
 
 function addDays(dateStr,days){
@@ -330,18 +314,14 @@ function render(){
   if(!data.active) return;
 
   document.getElementById("cycleRange").innerText =
-    formatDateDDMM(data.active.start)+" — "+formatDateDDMM(data.active.end);
+    formatDateMMDD(data.active.start)+" — "+formatDateMMDD(data.active.end);
 
   let totalHours=0;
   data.active.entries.forEach(e=> totalHours+=e.hours);
 
-  const earnings=totalHours*data.rate;
-
   document.getElementById("totalHours").innerText=totalHours.toFixed(2);
-  document.getElementById("totalEarnings").innerText="$"+earnings.toFixed(2);
 
   renderCurrentEntries();
-  renderPast();
 }
 
 function renderCurrentEntries(){
@@ -351,29 +331,13 @@ function renderCurrentEntries(){
   data.active.entries.forEach(e=>{
     const dateObj=new Date(e.date+"T00:00:00");
     const dayName=dateObj.toLocaleDateString(undefined,{weekday:"short"});
-    const formatted=`${dayName}, ${formatDateDDMM(e.date)}`;
+    const formatted=`${dayName}, ${formatDateMMDD(e.date)}`;
 
     const row=document.createElement("div");
     row.className="entry-row";
     row.innerHTML=`
       <div><strong>${formatted}</strong></div>
       <div class="entry-right">${e.hours.toFixed(2)} hrs</div>
-    `;
-    container.appendChild(row);
-  });
-}
-
-function renderPast(){
-  const container=document.getElementById("pastCycles");
-  container.innerHTML="";
-
-  data.cycles.slice().reverse().forEach(cycle=>{
-    const row=document.createElement("div");
-    row.className="past-cycle";
-    row.innerHTML=`
-      <div>
-        <strong>${formatDateDDMM(cycle.start)} — ${formatDateDDMM(cycle.end)}</strong>
-      </div>
     `;
     container.appendChild(row);
   });
