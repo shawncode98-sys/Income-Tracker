@@ -264,6 +264,11 @@ function save(){
   localStorage.setItem("incomeApp",JSON.stringify(data));
 }
 
+function formatDateDDMM(dateStr){
+  const [y,m,d] = dateStr.split("-");
+  return `${d}/${m}/${y}`;
+}
+
 function addDays(dateStr,days){
   const [y,m,d] = dateStr.split("-");
   const date = new Date(Number(y), Number(m)-1, Number(d));
@@ -321,36 +326,11 @@ function addEntry(){
   render();
 }
 
-function editEntry(index){
-  const entry=data.active.entries[index];
-
-  const newDate=prompt("Edit Date (YYYY-MM-DD)",entry.date);
-  if(!newDate) return;
-
-  const newIn=prompt("Clock In (HH:MM)",entry.inTime||"08:00");
-  if(!newIn) return;
-
-  const newOut=prompt("Clock Out (HH:MM)",entry.outTime||"17:00");
-  if(!newOut) return;
-
-  const hours=calculateHours(newDate,newIn,newOut);
-
-  data.active.entries[index]={date:newDate,inTime:newIn,outTime:newOut,hours:hours};
-  save();
-  render();
-}
-
-function deleteCycle(index){
-  data.cycles.splice(index,1);
-  save();
-  render();
-}
-
 function render(){
   if(!data.active) return;
 
   document.getElementById("cycleRange").innerText =
-    data.active.start+" — "+data.active.end;
+    formatDateDDMM(data.active.start)+" — "+formatDateDDMM(data.active.end);
 
   let totalHours=0;
   data.active.entries.forEach(e=> totalHours+=e.hours);
@@ -360,16 +340,6 @@ function render(){
   document.getElementById("totalHours").innerText=totalHours.toFixed(2);
   document.getElementById("totalEarnings").innerText="$"+earnings.toFixed(2);
 
-  const today=new Date();
-  const end=new Date(data.active.end);
-  const diff=Math.ceil((end-today)/(1000*60*60*24));
-  document.getElementById("daysLeft").innerText=diff>0?diff:0;
-
-  const progress=((14-diff)/14)*100;
-  document.getElementById("progressFill").style.width=progress+"%";
-  document.getElementById("progressLabel").innerText=
-    "Period Progress ("+Math.round(progress)+"%)";
-
   renderCurrentEntries();
   renderPast();
 }
@@ -378,21 +348,16 @@ function renderCurrentEntries(){
   const container=document.getElementById("currentEntries");
   container.innerHTML="";
 
-  data.active.entries.forEach((e,index)=>{
+  data.active.entries.forEach(e=>{
     const dateObj=new Date(e.date+"T00:00:00");
     const dayName=dateObj.toLocaleDateString(undefined,{weekday:"short"});
-    const [y,m,d]=e.date.split("-");
-    const formatted=`${dayName}, ${m}-${d}-${y}`;
+    const formatted=`${dayName}, ${formatDateDDMM(e.date)}`;
 
     const row=document.createElement("div");
     row.className="entry-row";
     row.innerHTML=`
       <div><strong>${formatted}</strong></div>
-      <div class="entry-right">
-        ${e.hours.toFixed(2)} hrs
-        <br>
-        <button class="small-btn" onclick="editEntry(${index})">Edit</button>
-      </div>
+      <div class="entry-right">${e.hours.toFixed(2)} hrs</div>
     `;
     container.appendChild(row);
   });
@@ -402,18 +367,13 @@ function renderPast(){
   const container=document.getElementById("pastCycles");
   container.innerHTML="";
 
-  data.cycles.slice().reverse().forEach((cycle,i)=>{
-    let totalHours=0;
-    cycle.entries.forEach(e=> totalHours+=e.hours);
-
+  data.cycles.slice().reverse().forEach(cycle=>{
     const row=document.createElement("div");
     row.className="past-cycle";
     row.innerHTML=`
       <div>
-        <strong>${cycle.start} — ${cycle.end}</strong><br>
-        ${totalHours.toFixed(2)} hrs
+        <strong>${formatDateDDMM(cycle.start)} — ${formatDateDDMM(cycle.end)}</strong>
       </div>
-      <button class="delete-btn" onclick="deleteCycle(${data.cycles.length-1-i})">Delete</button>
     `;
     container.appendChild(row);
   });
