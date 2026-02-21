@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Biweekly Income Tracker</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f5f7f6;
+      padding: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+
+    .green { color: #15803d; }
+
+    button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      background: #15803d;
+      color: white;
+      cursor: pointer;
+    }
+
+    input {
+      padding: 6px;
+      margin: 5px;
+    }
+
+    .cycle-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dropdown-content {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #15803d;
+      border-radius: 5px;
+      width: 0%;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Biweekly Income Tracker</h2>
+
+<div class="card">
+  <h3>Active Cycle</h3>
+  Start: <input type="date" id="startDate">
+  Hourly Rate: <input type="number" id="rate" value="12">
+  <button onclick="createCycle()">Start New Cycle</button>
+  <p id="cycleRange"></p>
+  <h2 class="green" id="totalEarnings">$0.00</h2>
+  <p id="totalHours">0h</p>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <p id="daysLeft"></p>
+</div>
+
+<div class="card">
+  <h3>Add Entry</h3>
+  Date: <input type="date" id="entryDate">
+  Clock In: <input type="time" id="clockIn">
+  Clock Out: <input type="time" id="clockOut">
+  <button onclick="addEntry()">Add</button>
+</div>
+
+<div class="card">
+  <h3>Past Cycles</h3>
+  <div id="pastCycles"></div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("incomeApp")) || { cycles: [], active: null };
+
+function save() {
+  localStorage.setItem("incomeApp", JSON.stringify(data));
+}
+
+function createCycle() {
+  const start = document.getElementById("startDate").value;
+  const rate = parseFloat(document.getElementById("rate").value);
+  if (!start) return alert("Select start date");
+
+  const end = new Date(start);
+  end.setDate(end.getDate() + 13);
+
+  const newCycle = {
+    id: Date.now(),
+    start_date: start,
+    end_date: end.toISOString().split("T")[0],
+    hourly_rate: rate,
+    entries: []
+  };
+
+  data.cycles.push(newCycle);
+  data.active = newCycle.id;
+  save();
+  render();
+}
+
+function addEntry() {
+  const date = document.getElementById("entryDate").value;
+  const inTime = document.getElementById("clockIn").value;
+  const outTime = document.getElementById("clockOut").value;
+
+  const cycle = data.cycles.find(c => c.id === data.active);
+  if (!cycle) return alert("Start a cycle first");
+
+  const start = new Date(cycle.start_date);
+  const end = new Date(cycle.end_date);
+  const entryDate = new Date(date);
+
+  if (entryDate < start || entryDate > end) {
+    return alert("Entry outside active cycle");
+  }
+
+  const hours = (new Date("1970-01-01T" + outTime) - new Date("1970-01-01T" + inTime)) / 3600000;
+
+  cycle.entries.push({ date, inTime, outTime, hours });
+  save();
+  render();
+}
+
+function render() {
+  const cycle = data.cycles.find(c => c.id === data.active);
+  if (!cycle) return;
+
+  document.getElementById("cycleRange").innerText =
+    cycle.start_date + " — " + cycle.end_date;
+
+  const totalHours = cycle.entries.reduce((sum, e) => sum + e.hours, 0);
+  const earnings = totalHours * cycle.hourly_rate;
+
+  document.getElementById("totalHours").innerText =
+    totalHours.toFixed(2) + "h";
+
+  document.getElementById("totalEarnings").innerText =
+    "$" + earnings.toFixed(2);
+
+  const today = new Date();
+  const end = new Date(cycle.end_date);
+  const start = new Date(cycle.start_date);
+
+  const totalDays = 14;
+  const daysPassed = Math.min(
+    totalDays,
+    Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1
+  );
+
+  const percent = (daysPassed / totalDays) * 100;
+  document.getElementById("progressFill").style.width = percent + "%";
+
+  const daysLeft = Math.max(
+    0,
+    Math.ceil((end - today) / (1000 * 60 * 60 * 24))
+  );
+
+  document.getElementById("daysLeft").innerText =
+    daysLeft + " days left";
+
+  renderPast();
+}
+
+function renderPast() {
+  const container = document.getElementById("pastCycles");
+  container.innerHTML = "";
+
+  data.cycles
+    .filter(c => c.id !== data.active)
+    .reverse()
+    .forEach(cycle => {
+      const totalHours = cycle.entries.reduce((sum, e) => sum + e.hours, 0);
+      const earnings = totalHours * cycle.hourly_rate;
+
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <div onclick="toggle(this)" style="cursor:pointer;">
+          <strong>${cycle.start_date} — ${cycle.end_date}</strong>
+          <span class="green" style="float:right;">$${earnings.toFixed(2)}</span>
+        </div>
+        <div class="dropdown-content">
+          <p>Total Hours: ${totalHours.toFixed(2)}h</p>
+          <p>Hourly Rate: $${cycle.hourly_rate}</p>
+          <p>Days Worked: ${cycle.entries.length}</p>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+}
+
+function toggle(element) {
+  const content = element.nextElementSibling;
+  content.style.display = content.style.display === "block" ? "none" : "block";
+}
+
+render();
+</script>
+
+</body>
+</html>
