@@ -265,10 +265,15 @@ function save(){
 }
 
 function addDays(dateStr,days){
-  const [y,m,d]=dateStr.split("-");
-  const date=new Date(y,m-1,d);
+  const [y,m,d] = dateStr.split("-");
+  const date = new Date(Number(y), Number(m)-1, Number(d));
   date.setDate(date.getDate()+days);
-  return date.toISOString().split("T")[0];
+
+  const newY = date.getFullYear();
+  const newM = String(date.getMonth()+1).padStart(2,"0");
+  const newD = String(date.getDate()).padStart(2,"0");
+
+  return `${newY}-${newM}-${newD}`;
 }
 
 function newCycle(){
@@ -276,22 +281,22 @@ function newCycle(){
 
   if(data.active){
     data.cycles.push(data.active);
-    start=addDays(data.active.end,1);
+    start = addDays(data.active.end,1);
   }else{
-    start=prompt("Enter start date (YYYY-MM-DD)");
+    start = prompt("Enter start date (YYYY-MM-DD)");
     if(!start) return;
   }
 
-  const end=addDays(start,13);
-  data.active={start:start,end:end,entries:[]};
+  const end = addDays(start,13);
+  data.active = {start:start,end:end,entries:[]};
   save();
   render();
 }
 
 function calculateHours(date,inTime,outTime){
-  const [y,m,d]=date.split("-");
-  const start=new Date(y,m-1,d,...inTime.split(":"));
-  let end=new Date(y,m-1,d,...outTime.split(":"));
+  const [y,m,d] = date.split("-");
+  const start = new Date(y,m-1,d,...inTime.split(":"));
+  let end = new Date(y,m-1,d,...outTime.split(":"));
   if(end<=start) end.setDate(end.getDate()+1);
   return (end-start)/3600000;
 }
@@ -330,13 +335,7 @@ function editEntry(index){
 
   const hours=calculateHours(newDate,newIn,newOut);
 
-  data.active.entries[index]={
-    date:newDate,
-    inTime:newIn,
-    outTime:newOut,
-    hours:hours
-  };
-
+  data.active.entries[index]={date:newDate,inTime:newIn,outTime:newOut,hours:hours};
   save();
   render();
 }
@@ -406,14 +405,13 @@ function renderPast(){
   data.cycles.slice().reverse().forEach((cycle,i)=>{
     let totalHours=0;
     cycle.entries.forEach(e=> totalHours+=e.hours);
-    const earnings=totalHours*data.rate;
 
     const row=document.createElement("div");
     row.className="past-cycle";
     row.innerHTML=`
       <div>
         <strong>${cycle.start} — ${cycle.end}</strong><br>
-        ${totalHours.toFixed(2)} hrs | $${earnings.toFixed(2)}
+        ${totalHours.toFixed(2)} hrs
       </div>
       <button class="delete-btn" onclick="deleteCycle(${data.cycles.length-1-i})">Delete</button>
     `;
