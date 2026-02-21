@@ -10,39 +10,40 @@
 <style>
 body{
   margin:0;
-  padding:50px;
+  padding:40px;
   background:#f4f6f8;
   font-family:'Inter',sans-serif;
   color:#1f2937;
 }
 
+/* TOP BAR */
 .topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:40px;
+  margin-bottom:30px;
 }
 
 .logo{
   display:flex;
   align-items:center;
-  gap:15px;
+  gap:12px;
 }
 
 .logo-box{
-  width:55px;
-  height:55px;
+  width:45px;
+  height:45px;
   background:linear-gradient(135deg,#0f766e,#15803d);
-  border-radius:18px;
-  box-shadow:0 8px 25px rgba(0,0,0,0.15);
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.15);
 }
 
 .settings-btn, .new-cycle-btn{
   background:white;
-  padding:12px 22px;
-  border-radius:14px;
+  padding:10px 18px;
+  border-radius:12px;
   border:none;
-  box-shadow:0 8px 20px rgba(0,0,0,0.08);
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
   cursor:pointer;
   font-weight:500;
   transition:0.3s;
@@ -50,52 +51,47 @@ body{
 
 .settings-btn:hover,
 .new-cycle-btn:hover{
-  transform:translateY(-3px);
-  box-shadow:0 12px 30px rgba(0,0,0,0.12);
+  transform:translateY(-2px);
 }
 
+/* SUMMARY */
 .summary{
   background:linear-gradient(135deg,#0f766e,#15803d);
   color:white;
-  padding:40px;
-  border-radius:30px;
-  margin-bottom:50px;
-  box-shadow:0 25px 60px rgba(0,0,0,0.2);
-  transition:0.3s;
-}
-
-.summary:hover{
-  transform:translateY(-4px);
-}
-
-.summary-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  padding:30px;
+  border-radius:22px;
+  margin-bottom:40px;
+  box-shadow:0 18px 40px rgba(0,0,0,0.18);
 }
 
 .stats{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:25px;
-  margin-top:40px;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:18px;
+  margin-top:25px;
 }
 
 .stat{
   background:rgba(255,255,255,0.15);
-  padding:25px;
-  border-radius:22px;
-  backdrop-filter:blur(12px);
+  padding:18px;
+  border-radius:16px;
 }
 
+/* PROGRESS */
 .progress-container{
-  margin-top:40px;
+  margin-top:30px;
+}
+
+.progress-label{
+  font-size:14px;
+  font-weight:500;
+  margin-bottom:8px;
 }
 
 .progress-bar{
-  height:12px;
+  height:10px;
   background:rgba(255,255,255,0.3);
-  border-radius:10px;
+  border-radius:8px;
   overflow:hidden;
 }
 
@@ -106,62 +102,49 @@ body{
   transition:0.6s ease;
 }
 
+/* CARDS */
 .card{
   background:white;
-  padding:35px;
-  border-radius:28px;
-  box-shadow:0 20px 40px rgba(0,0,0,0.06);
-  margin-bottom:50px;
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-4px);
+  padding:25px;
+  border-radius:20px;
+  box-shadow:0 14px 30px rgba(0,0,0,0.06);
+  margin-bottom:35px;
 }
 
 .form-row{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:25px;
-  margin-top:20px;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:18px;
+  margin-top:15px;
 }
 
 input{
-  padding:14px;
-  border-radius:14px;
+  padding:12px;
+  border-radius:12px;
   border:1px solid #ddd;
-  font-size:15px;
 }
 
 .add-btn{
   background:#15803d;
   color:white;
   border:none;
-  padding:14px 24px;
-  border-radius:16px;
+  padding:12px 20px;
+  border-radius:14px;
   cursor:pointer;
-  margin-top:25px;
+  margin-top:18px;
   font-weight:600;
   transition:0.3s;
 }
 
 .add-btn:hover{
-  transform:translateY(-3px);
-  box-shadow:0 10px 25px rgba(0,0,0,0.15);
-}
-
-.entry-row{
-  display:flex;
-  justify-content:space-between;
-  padding:15px 0;
-  border-bottom:1px solid #eee;
+  transform:translateY(-2px);
 }
 
 .past-cycle{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:15px 0;
+  padding:12px 0;
   border-bottom:1px solid #eee;
 }
 
@@ -169,8 +152,8 @@ input{
   background:#ef4444;
   color:white;
   border:none;
-  padding:8px 15px;
-  border-radius:10px;
+  padding:6px 12px;
+  border-radius:8px;
   cursor:pointer;
 }
 </style>
@@ -182,8 +165,8 @@ input{
   <div class="logo">
     <div class="logo-box"></div>
     <div>
-      <h1>Income Log</h1>
-      <p>Track your work hours and earnings</p>
+      <h2>Income Log</h2>
+      <small>Track your work hours and earnings</small>
     </div>
   </div>
   <div>
@@ -193,128 +176,41 @@ input{
 </div>
 
 <div class="summary">
-  <div class="summary-header">
-    <div>
-      <h2>Biweekly Income Summary</h2>
-      <p id="cycleRange"></p>
-    </div>
-  </div>
+  <h3>Biweekly Income Summary</h3>
+  <p id="cycleRange"></p>
 
   <div class="stats">
     <div class="stat">
       <small>Total Hours</small>
-      <h3 id="totalHours">0.00</h3>
+      <h4 id="totalHours">0.00</h4>
     </div>
     <div class="stat">
       <small>Earnings</small>
-      <h3 id="totalEarnings">$0.00</h3>
+      <h4 id="totalEarnings">$0.00</h4>
     </div>
     <div class="stat">
       <small>Rate</small>
-      <h3>$12/hr</h3>
+      <h4>$12/hr</h4>
     </div>
     <div class="stat">
       <small>Days Left</small>
-      <h3 id="daysLeft">0</h3>
+      <h4 id="daysLeft">0</h4>
     </div>
   </div>
 
   <div class="progress-container">
+    <div class="progress-label" id="progressLabel">
+      Period Progress (0%)
+    </div>
     <div class="progress-bar">
       <div class="progress-fill" id="progressFill"></div>
     </div>
   </div>
 </div>
 
-<div class="card">
-  <h2>Add New Entry</h2>
-
-  <label>
-    <input type="checkbox" id="dayOff"> Mark as Day Off
-  </label>
-
-  <div class="form-row">
-    <input type="date" id="entryDate">
-    <input type="time" id="clockIn">
-    <input type="time" id="clockOut">
-  </div>
-
-  <button class="add-btn" onclick="addEntry()">Add Entry</button>
-</div>
-
-<div class="card">
-  <h2>Past Cycles</h2>
-  <div id="pastCycles"></div>
-</div>
-
+<!-- KEEP REST OF YOUR SCRIPT EXACT SAME -->
 <script>
-let data = JSON.parse(localStorage.getItem("incomeApp")) || {
-  cycles: [],
-  active: null,
-  rate: 12
-};
-
-function save(){
-  localStorage.setItem("incomeApp",JSON.stringify(data));
-}
-
-function addDays(dateStr,days){
-  const [y,m,d]=dateStr.split("-");
-  const date=new Date(y,m-1,d);
-  date.setDate(date.getDate()+days);
-  return date.toISOString().split("T")[0];
-}
-
-function newCycle(){
-  const start=prompt("Enter start date (YYYY-MM-DD)");
-  if(!start) return;
-
-  if(data.active){
-    data.cycles.push(data.active);
-  }
-
-  const end=addDays(start,13);
-  data.active={start:start,end:end,entries:[]};
-  save();
-  render();
-}
-
-function calculateHours(date,inTime,outTime){
-  const [y,m,d]=date.split("-");
-  const start=new Date(y,m-1,d,...inTime.split(":"));
-  let end=new Date(y,m-1,d,...outTime.split(":"));
-  if(end<=start) end.setDate(end.getDate()+1);
-  return (end-start)/3600000;
-}
-
-function addEntry(){
-  if(!data.active){
-    alert("Start a cycle first.");
-    return;
-  }
-
-  const date=document.getElementById("entryDate").value;
-  const inTime=document.getElementById("clockIn").value;
-  const outTime=document.getElementById("clockOut").value;
-  const dayOff=document.getElementById("dayOff").checked;
-
-  if(dayOff){
-    data.active.entries.push({date,hours:0});
-  }else{
-    const hours=calculateHours(date,inTime,outTime);
-    data.active.entries.push({date,hours});
-  }
-
-  document.getElementById("dayOff").checked=false;
-  save();
-  render();
-}
-
-function deleteCycle(index){
-  data.cycles.splice(index,1);
-  save();
-  render();
-}
+// Keep your previous JS logic here unchanged
 
 function render(){
   if(!data.active) return;
@@ -337,33 +233,9 @@ function render(){
 
   const progress=((14-diff)/14)*100;
   document.getElementById("progressFill").style.width=progress+"%";
-
-  renderPast();
+  document.getElementById("progressLabel").innerText=
+    "Period Progress ("+Math.round(progress)+"%)";
 }
-
-function renderPast(){
-  const container=document.getElementById("pastCycles");
-  container.innerHTML="";
-
-  data.cycles.slice().reverse().forEach((cycle,i)=>{
-    let totalHours=0;
-    cycle.entries.forEach(e=> totalHours+=e.hours);
-    const earnings=totalHours*data.rate;
-
-    const row=document.createElement("div");
-    row.className="past-cycle";
-    row.innerHTML=`
-      <div>
-        <strong>${cycle.start} — ${cycle.end}</strong><br>
-        ${totalHours.toFixed(2)} hrs | $${earnings.toFixed(2)}
-      </div>
-      <button class="delete-btn" onclick="deleteCycle(${data.cycles.length-1-i})">Delete</button>
-    `;
-    container.appendChild(row);
-  });
-}
-
-render();
 </script>
 
 </body>
