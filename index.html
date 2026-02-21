@@ -74,7 +74,7 @@ body{
   color:white;
   padding:25px;
   border-radius:20px;
-  margin-bottom:30px;
+  margin-bottom:25px;
   box-shadow:0 15px 35px rgba(0,0,0,0.2);
 }
 
@@ -91,7 +91,6 @@ body{
   border-radius:14px;
 }
 
-/* PROGRESS */
 .progress-container{
   margin-top:20px;
 }
@@ -122,11 +121,6 @@ body{
   border-radius:18px;
   box-shadow:0 12px 25px rgba(0,0,0,0.06);
   margin-bottom:25px;
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-3px);
 }
 
 .form-row{
@@ -153,12 +147,17 @@ input{
   font-weight:600;
 }
 
-.past-cycle{
+.entry-row, .past-cycle{
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding:10px 0;
   border-bottom:1px solid #eee;
+}
+
+.entry-right{
+  text-align:right;
+  font-weight:500;
 }
 
 .delete-btn{
@@ -235,6 +234,11 @@ input{
   </div>
 
   <button class="add-btn" onclick="addEntry()">Add Entry</button>
+</div>
+
+<div class="card">
+  <h4>Entries (Current Cycle)</h4>
+  <div id="currentEntries"></div>
 </div>
 
 <div class="card">
@@ -335,7 +339,33 @@ function render(){
   document.getElementById("progressLabel").innerText=
     "Period Progress ("+Math.round(progress)+"%)";
 
+  renderCurrentEntries();
   renderPast();
+}
+
+function renderCurrentEntries(){
+  const container=document.getElementById("currentEntries");
+  container.innerHTML="";
+
+  data.active.entries.forEach(e=>{
+    const dailyEarning=e.hours*data.rate;
+
+    const dateObj=new Date(e.date);
+    const dayName=dateObj.toLocaleDateString(undefined,{weekday:"short"});
+    const [y,m,d]=e.date.split("-");
+    const formatted=`${dayName}, ${m}-${d}-${y}`;
+
+    const row=document.createElement("div");
+    row.className="entry-row";
+    row.innerHTML=`
+      <div><strong>${formatted}</strong></div>
+      <div class="entry-right">
+        ${e.hours.toFixed(2)} hrs<br>
+        $${dailyEarning.toFixed(2)}
+      </div>
+    `;
+    container.appendChild(row);
+  });
 }
 
 function renderPast(){
