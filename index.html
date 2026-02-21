@@ -23,17 +23,6 @@ body {
   margin-bottom:30px;
 }
 
-.settings-btn {
-  background:white;
-  padding:10px 18px;
-  border-radius:12px;
-  border:none;
-  box-shadow:0 5px 15px rgba(0,0,0,0.05);
-  cursor:pointer;
-  transition:0.2s;
-}
-.settings-btn:hover { transform:scale(1.05); }
-
 .summary-card {
   background:linear-gradient(135deg,#0f766e,#15803d);
   color:white;
@@ -43,9 +32,7 @@ body {
   box-shadow:0 30px 60px rgba(0,0,0,0.1);
   transition:0.3s;
 }
-.summary-card:hover {
-  transform:translateY(-4px);
-}
+.summary-card:hover { transform:translateY(-4px); }
 
 .summary-header {
   display:flex;
@@ -73,10 +60,7 @@ body {
   background:rgba(255,255,255,0.15);
   padding:20px;
   border-radius:16px;
-  backdrop-filter:blur(10px);
 }
-
-.stat-box h3 { margin:5px 0 0 0; }
 
 .progress-bar {
   height:10px;
@@ -98,9 +82,7 @@ body {
   border-radius:20px;
   box-shadow:0 15px 30px rgba(0,0,0,0.05);
   margin-bottom:30px;
-  transition:0.3s;
 }
-.card:hover { transform:translateY(-3px); }
 
 .entry-grid {
   display:grid;
@@ -124,9 +106,7 @@ button.primary {
   border-radius:12px;
   cursor:pointer;
   margin-top:20px;
-  transition:0.2s;
 }
-button.primary:hover { transform:scale(1.05); }
 
 .past-item {
   padding:15px;
@@ -153,7 +133,6 @@ button.primary:hover { transform:scale(1.05); }
     <h1>Income Log</h1>
     <p>Track your work hours and earnings</p>
   </div>
-  <button class="settings-btn">Settings</button>
 </div>
 
 <div class="summary-card">
@@ -175,7 +154,7 @@ button.primary:hover { transform:scale(1.05); }
       <h3 id="totalEarnings">$0.00</h3>
     </div>
     <div class="stat-box">
-      <small>Est. Net (After Tax)</small>
+      <small>Est. Net (After Tax 22%)</small>
       <h3 id="netPay">$0.00</h3>
     </div>
     <div class="stat-box">
@@ -218,16 +197,24 @@ function save(){
   localStorage.setItem("incomeApp",JSON.stringify(data));
 }
 
+function formatDate(dateStr){
+  const d=new Date(dateStr);
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  const day=String(d.getDate()).padStart(2,"0");
+  const y=d.getFullYear();
+  return `${m}-${day}-${y}`;
+}
+
 function startNewCycle(){
-  const start = prompt("Enter start date (YYYY-MM-DD)");
+  const start=prompt("Enter start date (YYYY-MM-DD)");
   if(!start) return;
 
-  const end = new Date(start);
+  const end=new Date(start);
   end.setDate(end.getDate()+13);
 
   if(data.active) data.cycles.push(data.active);
 
-  data.active = {
+  data.active={
     start:start,
     end:end.toISOString().split("T")[0],
     entries:[]
@@ -255,7 +242,7 @@ function render(){
   if(!data.active) return;
 
   document.getElementById("cycleRange").innerText=
-    data.active.start+" — "+data.active.end;
+    formatDate(data.active.start)+" — "+formatDate(data.active.end);
 
   const totalHours=data.active.entries.reduce((s,e)=>s+e.hours,0);
   const earnings=totalHours*data.rate;
@@ -300,7 +287,7 @@ function renderPast(){
     const div=document.createElement("div");
     div.innerHTML=`
       <div class="past-item" onclick="this.nextElementSibling.classList.toggle('show')">
-        <strong>${cycle.start} — ${cycle.end}</strong>
+        <strong>${formatDate(cycle.start)} — ${formatDate(cycle.end)}</strong>
         <span style="float:right;color:#15803d;">$${earnings.toFixed(2)}</span>
       </div>
       <div class="dropdown">
