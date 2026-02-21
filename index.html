@@ -63,6 +63,10 @@ body{
   color:var(--text);
 }
 
+.top-buttons button:hover{
+  transform:translateY(-2px);
+}
+
 .summary{
   background:linear-gradient(135deg,var(--green1),var(--green2));
   color:white;
@@ -204,6 +208,14 @@ input{
       <small>Earnings</small>
       <h4 id="totalEarnings">$0.00</h4>
     </div>
+    <div class="stat">
+      <small>Rate</small>
+      <h4>$12/hr</h4>
+    </div>
+    <div class="stat">
+      <small>Days Left</small>
+      <h4 id="daysLeft">0</h4>
+    </div>
   </div>
 
   <div class="progress-container">
@@ -236,6 +248,11 @@ input{
   <div id="currentEntries"></div>
 </div>
 
+<div class="card">
+  <h4>Past Cycles</h4>
+  <div id="pastCycles"></div>
+</div>
+
 <script>
 let data = JSON.parse(localStorage.getItem("incomeApp")) || {
   cycles: [],
@@ -247,10 +264,9 @@ function save(){
   localStorage.setItem("incomeApp",JSON.stringify(data));
 }
 
-/* FORMAT MM/DD/YYYY */
-function formatDateMMDD(dateStr){
+function formatDateDisplay(dateStr){
   const [y,m,d] = dateStr.split("-");
-  return `${m}/${d}/${y}`;
+  return `${m}-${d}-${y}`;
 }
 
 function addDays(dateStr,days){
@@ -314,30 +330,46 @@ function render(){
   if(!data.active) return;
 
   document.getElementById("cycleRange").innerText =
-    formatDateMMDD(data.active.start)+" — "+formatDateMMDD(data.active.end);
+    formatDateDisplay(data.active.start) + " — " +
+    formatDateDisplay(data.active.end);
 
   let totalHours=0;
   data.active.entries.forEach(e=> totalHours+=e.hours);
 
-  document.getElementById("totalHours").innerText=totalHours.toFixed(2);
+  const earnings=totalHours*data.rate;
 
-  renderCurrentEntries();
+  document.getElementById("totalHours").innerText=totalHours.toFixed(2);
+  document.getElementById("totalEarnings").innerText="$"+earnings.toFixed(2);
+
+  const today=new Date();
+  const end=new Date(data.active.end);
+  const diff=Math.ceil((end-today)/(1000*60*60*24));
+  document.getElementById("daysLeft").innerText=diff>0?diff:0;
+
+  const progress=((14-diff)/14)*100;
+  document.getElementById("progressFill").style.width=progress+"%";
+  document.getElementById("progressLabel").innerText=
+    "Period Progress ("+Math.round(progress)+"%)";
+
+  renderPast();
 }
 
-function renderCurrentEntries(){
-  const container=document.getElementById("currentEntries");
+function renderPast(){
+  const container=document.getElementById("pastCycles");
   container.innerHTML="";
 
-  data.active.entries.forEach(e=>{
-    const dateObj=new Date(e.date+"T00:00:00");
-    const dayName=dateObj.toLocaleDateString(undefined,{weekday:"short"});
-    const formatted=`${dayName}, ${formatDateMMDD(e.date)}`;
+  data.cycles.slice().reverse().forEach((cycle,i)=>{
+    let totalHours=0;
+    cycle.entries.forEach(e=> totalHours+=e.hours);
 
     const row=document.createElement("div");
-    row.className="entry-row";
+    row.className="past-cycle";
     row.innerHTML=`
-      <div><strong>${formatted}</strong></div>
-      <div class="entry-right">${e.hours.toFixed(2)} hrs</div>
+      <div>
+        <strong>${formatDateDisplay(cycle.start)} — ${formatDateDisplay(cycle.end)}</strong><br>
+        ${totalHours.toFixed(2)} hrs
+      </div>
+      <button class="delete-btn" onclick="deleteCycle(${data.cycles.length-1-i})">Delete</button>
     `;
     container.appendChild(row);
   });
