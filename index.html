@@ -31,21 +31,6 @@ body{
   transition:0.3s;
 }
 
-  .dropdown-details{
-  max-height:0;
-  overflow:hidden;
-  transition:max-height 0.4s ease;
-  padding-left:10px;
-  color:#6b7280;
-  font-size:14px;
-}
-
-.dropdown-details.open{
-  max-height:200px;
-  margin-top:10px;
-}
-
-
 .topbar{
   display:flex;
   justify-content:space-between;
@@ -120,7 +105,7 @@ body{
   height:100%;
   background:white;
   width:0%;
-  transition:0.8s ease;
+  transition:0.6s ease;
 }
 
 .card{
@@ -184,6 +169,20 @@ input{
   padding:5px 10px;
   border-radius:8px;
   cursor:pointer;
+}
+
+.dropdown-details{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height 0.4s ease;
+  padding-left:10px;
+  color:#6b7280;
+  font-size:14px;
+}
+
+.dropdown-details.open{
+  max-height:200px;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -297,7 +296,6 @@ function addDays(dateStr,days){
 
 function newCycle(){
   let start;
-
   if(data.active){
     data.cycles.push(data.active);
     start = addDays(data.active.end,1);
@@ -305,7 +303,6 @@ function newCycle(){
     start = prompt("Enter start date (YYYY-MM-DD)");
     if(!start) return;
   }
-
   const end = addDays(start,13);
   data.active = {start:start,end:end,entries:[]};
   save();
@@ -342,18 +339,13 @@ function addEntry(){
 
 function editEntry(index){
   const entry=data.active.entries[index];
-
   const newDate=prompt("Edit Date (YYYY-MM-DD)",entry.date);
   if(!newDate) return;
-
   const newIn=prompt("Clock In (HH:MM)",entry.inTime||"08:00");
   if(!newIn) return;
-
   const newOut=prompt("Clock Out (HH:MM)",entry.outTime||"17:00");
   if(!newOut) return;
-
   const hours=calculateHours(newDate,newIn,newOut);
-
   data.active.entries[index]={date:newDate,inTime:newIn,outTime:newOut,hours};
   save();
   render();
@@ -365,12 +357,15 @@ function deleteCycle(index){
   render();
 }
 
+function toggleDetails(index){
+  document.getElementById("details-"+index).classList.toggle("open");
+}
+
 function render(){
   if(!data.active) return;
 
   document.getElementById("cycleRange").innerText =
-    formatDateDisplay(data.active.start) + " — " +
-    formatDateDisplay(data.active.end);
+    formatDateDisplay(data.active.start)+" — "+formatDateDisplay(data.active.end);
 
   let totalHours=0;
   data.active.entries.forEach(e=> totalHours+=e.hours);
@@ -395,12 +390,10 @@ function render(){
 function renderCurrentEntries(){
   const container=document.getElementById("currentEntries");
   container.innerHTML="";
-
   data.active.entries.forEach((e,index)=>{
     const dateObj=new Date(e.date+"T00:00:00");
     const dayName=dateObj.toLocaleDateString(undefined,{weekday:"short"});
     const formatted=`${dayName}, ${formatDateDisplay(e.date)}`;
-
     const row=document.createElement("div");
     row.className="entry-row";
     row.innerHTML=`
@@ -424,17 +417,29 @@ function renderPast(){
   data.cycles.slice().reverse().forEach((cycle,i)=>{
     let totalHours=0;
     cycle.entries.forEach(e=> totalHours+=e.hours);
+    const totalEarnings = totalHours * data.rate;
+    const daysWorked = cycle.entries.length;
+    const avgPerDay = daysWorked>0? totalHours/daysWorked : 0;
+    const index=data.cycles.length-1-i;
 
-    const row=document.createElement("div");
-    row.className="past-cycle";
-    row.innerHTML=`
-      <div>
-        <strong>${formatDateDisplay(cycle.start)} — ${formatDateDisplay(cycle.end)}</strong><br>
-        ${totalHours.toFixed(2)} hrs
+    const wrapper=document.createElement("div");
+    wrapper.style.marginBottom="15px";
+    wrapper.innerHTML=`
+      <div class="past-cycle" style="cursor:pointer" onclick="toggleDetails(${index})">
+        <div>
+          <strong>${formatDateDisplay(cycle.start)} — ${formatDateDisplay(cycle.end)}</strong><br>
+          ${totalHours.toFixed(2)} hrs
+        </div>
+        <button class="delete-btn" onclick="event.stopPropagation(); deleteCycle(${index})">Delete</button>
       </div>
-      <button class="delete-btn" onclick="deleteCycle(${data.cycles.length-1-i})">Delete</button>
+      <div class="dropdown-details" id="details-${index}">
+        <div>Total Hours: ${totalHours.toFixed(2)} hrs</div>
+        <div>Total Earnings: $${totalEarnings.toFixed(2)}</div>
+        <div>Average Per Day: ${avgPerDay.toFixed(2)} hrs</div>
+        <div>Total Days Worked: ${daysWorked}</div>
+      </div>
     `;
-    container.appendChild(row);
+    container.appendChild(wrapper);
   });
 }
 
