@@ -8,20 +8,35 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-body{
-  margin:0;
-  padding:40px;
-  background:#f4f6f8;
-  font-family:'Inter',sans-serif;
-  color:#1f2937;
+:root{
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --text:#1f2937;
+  --green1:#0f766e;
+  --green2:#15803d;
 }
 
-/* TOP BAR */
+.dark{
+  --bg:#111827;
+  --card:#1f2937;
+  --text:#f3f4f6;
+}
+
+body{
+  margin:0;
+  padding:35px;
+  background:var(--bg);
+  font-family:'Inter',sans-serif;
+  color:var(--text);
+  transition:0.3s;
+}
+
+/* TOPBAR */
 .topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:30px;
+  margin-bottom:25px;
 }
 
 .logo{
@@ -31,67 +46,65 @@ body{
 }
 
 .logo-box{
-  width:45px;
-  height:45px;
-  background:linear-gradient(135deg,#0f766e,#15803d);
+  width:42px;
+  height:42px;
+  background:linear-gradient(135deg,var(--green1),var(--green2));
   border-radius:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.15);
 }
 
-.settings-btn, .new-cycle-btn{
-  background:white;
-  padding:10px 18px;
+.top-buttons button{
+  background:var(--card);
+  padding:8px 16px;
   border-radius:12px;
   border:none;
   box-shadow:0 6px 18px rgba(0,0,0,0.08);
   cursor:pointer;
-  font-weight:500;
+  margin-left:8px;
   transition:0.3s;
+  color:var(--text);
 }
 
-.settings-btn:hover,
-.new-cycle-btn:hover{
+.top-buttons button:hover{
   transform:translateY(-2px);
 }
 
 /* SUMMARY */
 .summary{
-  background:linear-gradient(135deg,#0f766e,#15803d);
+  background:linear-gradient(135deg,var(--green1),var(--green2));
   color:white;
-  padding:30px;
-  border-radius:22px;
-  margin-bottom:40px;
-  box-shadow:0 18px 40px rgba(0,0,0,0.18);
+  padding:25px;
+  border-radius:20px;
+  margin-bottom:30px;
+  box-shadow:0 15px 35px rgba(0,0,0,0.2);
 }
 
 .stats{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-  gap:18px;
-  margin-top:25px;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:15px;
+  margin-top:20px;
 }
 
 .stat{
   background:rgba(255,255,255,0.15);
-  padding:18px;
-  border-radius:16px;
+  padding:15px;
+  border-radius:14px;
 }
 
 /* PROGRESS */
 .progress-container{
-  margin-top:30px;
+  margin-top:20px;
 }
 
 .progress-label{
-  font-size:14px;
-  font-weight:500;
-  margin-bottom:8px;
+  font-size:13px;
+  margin-bottom:6px;
 }
 
 .progress-bar{
-  height:10px;
+  height:8px;
   background:rgba(255,255,255,0.3);
-  border-radius:8px;
+  border-radius:6px;
   overflow:hidden;
 }
 
@@ -99,28 +112,33 @@ body{
   height:100%;
   background:white;
   width:0%;
-  transition:0.6s ease;
+  transition:0.8s ease;
 }
 
 /* CARDS */
 .card{
-  background:white;
-  padding:25px;
-  border-radius:20px;
-  box-shadow:0 14px 30px rgba(0,0,0,0.06);
-  margin-bottom:35px;
+  background:var(--card);
+  padding:20px;
+  border-radius:18px;
+  box-shadow:0 12px 25px rgba(0,0,0,0.06);
+  margin-bottom:25px;
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-3px);
 }
 
 .form-row{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:18px;
-  margin-top:15px;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:15px;
+  margin-top:12px;
 }
 
 input{
-  padding:12px;
-  border-radius:12px;
+  padding:10px;
+  border-radius:10px;
   border:1px solid #ddd;
 }
 
@@ -128,23 +146,18 @@ input{
   background:#15803d;
   color:white;
   border:none;
-  padding:12px 20px;
-  border-radius:14px;
+  padding:10px 18px;
+  border-radius:12px;
   cursor:pointer;
-  margin-top:18px;
+  margin-top:15px;
   font-weight:600;
-  transition:0.3s;
-}
-
-.add-btn:hover{
-  transform:translateY(-2px);
 }
 
 .past-cycle{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:12px 0;
+  padding:10px 0;
   border-bottom:1px solid #eee;
 }
 
@@ -152,7 +165,7 @@ input{
   background:#ef4444;
   color:white;
   border:none;
-  padding:6px 12px;
+  padding:5px 10px;
   border-radius:8px;
   cursor:pointer;
 }
@@ -165,18 +178,19 @@ input{
   <div class="logo">
     <div class="logo-box"></div>
     <div>
-      <h2>Income Log</h2>
-      <small>Track your work hours and earnings</small>
+      <h3>Income Log</h3>
+      <small>Track your work hours</small>
     </div>
   </div>
-  <div>
-    <button class="settings-btn">⚙ Settings</button>
-    <button class="new-cycle-btn" onclick="newCycle()">➕ New Cycle</button>
+
+  <div class="top-buttons">
+    <button onclick="toggleDark()">🌙 Dark</button>
+    <button onclick="newCycle()">➕ New Cycle</button>
   </div>
 </div>
 
 <div class="summary">
-  <h3>Biweekly Income Summary</h3>
+  <h4>Biweekly Income Summary</h4>
   <p id="cycleRange"></p>
 
   <div class="stats">
@@ -208,9 +222,94 @@ input{
   </div>
 </div>
 
-<!-- KEEP REST OF YOUR SCRIPT EXACT SAME -->
+<div class="card">
+  <h4>Add Entry</h4>
+  <label>
+    <input type="checkbox" id="dayOff"> Mark as Day Off
+  </label>
+
+  <div class="form-row">
+    <input type="date" id="entryDate">
+    <input type="time" id="clockIn">
+    <input type="time" id="clockOut">
+  </div>
+
+  <button class="add-btn" onclick="addEntry()">Add Entry</button>
+</div>
+
+<div class="card">
+  <h4>Past Cycles</h4>
+  <div id="pastCycles"></div>
+</div>
+
 <script>
-// Keep your previous JS logic here unchanged
+let data = JSON.parse(localStorage.getItem("incomeApp")) || {
+  cycles: [],
+  active: null,
+  rate: 12
+};
+
+function save(){
+  localStorage.setItem("incomeApp",JSON.stringify(data));
+}
+
+function addDays(dateStr,days){
+  const [y,m,d]=dateStr.split("-");
+  const date=new Date(y,m-1,d);
+  date.setDate(date.getDate()+days);
+  return date.toISOString().split("T")[0];
+}
+
+function newCycle(){
+  let start;
+
+  if(data.active){
+    data.cycles.push(data.active);
+    start=addDays(data.active.end,1);
+  }else{
+    start=prompt("Enter start date (YYYY-MM-DD)");
+    if(!start) return;
+  }
+
+  const end=addDays(start,13);
+  data.active={start:start,end:end,entries:[]};
+  save();
+  render();
+}
+
+function calculateHours(date,inTime,outTime){
+  const [y,m,d]=date.split("-");
+  const start=new Date(y,m-1,d,...inTime.split(":"));
+  let end=new Date(y,m-1,d,...outTime.split(":"));
+  if(end<=start) end.setDate(end.getDate()+1);
+  return (end-start)/3600000;
+}
+
+function addEntry(){
+  if(!data.active) return alert("Start a cycle first");
+
+  const date=document.getElementById("entryDate").value;
+  const inTime=document.getElementById("clockIn").value;
+  const outTime=document.getElementById("clockOut").value;
+  const dayOff=document.getElementById("dayOff").checked;
+
+  if(dayOff){
+    data.active.entries.push({date,hours:0});
+  }else{
+    const hours=calculateHours(date,inTime,outTime);
+    data.active.entries.push({date,hours});
+  }
+
+  document.getElementById("dayOff").checked=false;
+  save();
+  render();
+}
+
+function deleteCycle(index){
+  data.cycles.splice(index,1);
+  save();
+  render();
+}
 
 function render(){
   if(!data.active) return;
@@ -235,7 +334,37 @@ function render(){
   document.getElementById("progressFill").style.width=progress+"%";
   document.getElementById("progressLabel").innerText=
     "Period Progress ("+Math.round(progress)+"%)";
+
+  renderPast();
 }
+
+function renderPast(){
+  const container=document.getElementById("pastCycles");
+  container.innerHTML="";
+
+  data.cycles.slice().reverse().forEach((cycle,i)=>{
+    let totalHours=0;
+    cycle.entries.forEach(e=> totalHours+=e.hours);
+    const earnings=totalHours*data.rate;
+
+    const row=document.createElement("div");
+    row.className="past-cycle";
+    row.innerHTML=`
+      <div>
+        <strong>${cycle.start} — ${cycle.end}</strong><br>
+        ${totalHours.toFixed(2)} hrs | $${earnings.toFixed(2)}
+      </div>
+      <button class="delete-btn" onclick="deleteCycle(${data.cycles.length-1-i})">Delete</button>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function toggleDark(){
+  document.body.classList.toggle("dark");
+}
+
+render();
 </script>
 
 </body>
